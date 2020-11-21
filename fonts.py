@@ -4,8 +4,7 @@ import numpy as np
 
 df = pd.read_csv('fonts_2', delimiter="\n", header=None, dtype=str)
 
-df = np.array(df)
-data = df.reshape(32, 7)
+data = np.array(df).reshape(32, 7)
 
 inputs_matrix_bits = data
 outputs_matrix_bits = data
@@ -20,6 +19,7 @@ for i in range(len(new_data)):
 
 def get_inputs():
     return np.asarray(new_data)
+
 
 def get_outputs():
     return np.asarray(new_data)
