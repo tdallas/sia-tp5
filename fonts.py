@@ -20,6 +20,7 @@ for i in range(len(new_data)):
 def get_inputs():
     return np.asarray(new_data)
 
+print(new_data)
 
 def get_outputs():
     return np.asarray(new_data)
