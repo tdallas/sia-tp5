@@ -1,42 +1,16 @@
-# -*- coding: utf-8 -*-
-"""
-Author: Raymundo Cassani
-April 2017
-This file contains the Multi-Layer Perceptron (MLP) class which creates a
-fully-connected-feedforward-artifitial-neural-network object with methods
-for its usage
-Methods:
-    __init__()
-    train(X, y, iterations, reset)
-    predict(X)
-    initialize_theta_weights()
-    backpropagation(X, Y)
-    feedforward(X)
-    unroll_weights(rolled_data)
-    roll_weights(unrolled_data)
-    sigmoid(z)
-    relu(z)
-    sigmoid_derivative(z)
-    relu_derivative(z)
-"""
 import numpy as np
 
-
 class Mlp():
-    '''
-    fully-connected Multi-Layer Perceptron (MLP)
-    '''
-
-    def __init__(self, size_layers, act_funct='sigmoid', reg_lambda=0, bias_flag=True):
+    def __init__(self, size_layers, act_funct='relu', reg_lambda=0.1, bias_flag=True):
         '''
         Constructor method. Defines the characteristics of the MLP
         Arguments:
             size_layers : List with the number of Units for:
                 [Input, Hidden1, Hidden2, ... HiddenN, Output] Layers.
             act_funtc   : Activation function for all the Units in the MLP
-                default = 'sigmoid'
+                default = 'relu'
             reg_lambda: Value of the regularization parameter Lambda
-                default = 0, i.e. no regularization
+                lambda = 0, i.e. no regularization
             bias: Indicates is the bias element is added for each layer, but the output
         '''
         self.size_layers = size_layers
@@ -57,7 +31,7 @@ class Mlp():
             Y          : Sparse class matrix [n_examples, classes]
             iterations : Number of times Backpropagation is performed
                 default = 400
-            reset      : If set, initialize Theta Weights before training
+            reset      : If set, initialize Weights before training
                 default = False
         '''
         n_examples = Y.shape[0]
@@ -67,9 +41,9 @@ class Mlp():
         for iteration in range(iterations):
             self.gradients = self.backpropagation(X, Y)
             self.gradients_vector = self.unroll_weights(self.gradients)
-            self.theta_vector = self.unroll_weights(self.theta_weights)
+            self.theta_vector = self.unroll_weights(self.weights)
             self.theta_vector = self.theta_vector - self.gradients_vector
-            self.theta_weights = self.roll_weights(self.theta_vector)
+            self.weights = self.roll_weights(self.theta_vector)
 
     def predict(self, X):
         '''
@@ -85,49 +59,31 @@ class Mlp():
 
     def initialize_theta_weights(self):
         '''
-        Initialize theta_weights, initialization method depends
+        Initialize weights, initialization method depends
         on the Activation Function and the Number of Units in the current layer
         and the next layer.
         The weights for each layer as of the size [next_layer, current_layer + 1]
         '''
-        self.theta_weights = []
+        self.weights = []
         size_next_layers = self.size_layers.copy()
         size_next_layers.pop(0)
         for size_layer, size_next_layer in zip(self.size_layers, size_next_layers):
-            if self.act_f == 'sigmoid':
-                # Method presented "Understanding the difficulty of training deep feedforward neurla networks"
-                # Xavier Glorot and Youshua Bengio, 2010
-                epsilon = 4.0 * np.sqrt(6) / \
-                    np.sqrt(size_layer + size_next_layer)
-                # Weigts from a uniform distribution [-epsilon, epsion]
-                if self.bias_flag:
-                    theta_tmp = epsilon * \
-                        ((np.random.rand(size_next_layer, size_layer + 1) * 2.0) - 1)
-                else:
-                    theta_tmp = epsilon * \
-                        ((np.random.rand(size_next_layer, size_layer) * 2.0) - 1)
-            elif self.act_f == 'relu':
-                # Method presented in "Delving Deep into Rectifiers: Surpassing Human-Level Performance on ImageNet Classfication"
-                # He et Al. 2015
-                epsilon = np.sqrt(2.0 / (size_layer * size_next_layer))
-                # Weigts from Normal distribution mean = 0, std = epsion
-                if self.bias_flag:
-                    theta_tmp = epsilon * \
-                        (np.random.randn(size_next_layer, size_layer + 1))
-                else:
-                    theta_tmp = epsilon * \
-                        (np.random.randn(size_next_layer, size_layer))
-            self.theta_weights.append(theta_tmp)
-        return self.theta_weights
+            epsilon = np.sqrt(2.0 / (size_layer * size_next_layer))
+            # Weigts from Normal distribution mean = 0, std = epsion
+            if self.bias_flag:
+                theta_tmp = epsilon * \
+                    (np.random.randn(size_next_layer, size_layer + 1))
+            else:
+                theta_tmp = epsilon * \
+                    (np.random.randn(size_next_layer, size_layer))
+            self.weights.append(theta_tmp)
+        return self.weights
 
     def backpropagation(self, X, Y):
         '''
         Implementation of the Backpropagation algorithm with regularization
         '''
-        if self.act_f == 'sigmoid':
-            def g_dz(x): return self.sigmoid_derivative(x)
-        elif self.act_f == 'relu':
-            def g_dz(x): return self.relu_derivative(x)
+        def g_dz(x): return self.relu_derivative(x)
 
         n_examples = X.shape[0]
         # Feedforward
@@ -138,7 +94,7 @@ class Mlp():
         deltas[-1] = A[-1] - Y
         # For the second last layer to the second one
         for ix_layer in np.arange(self.n_layers - 1 - 1, 0, -1):
-            theta_tmp = self.theta_weights[ix_layer]
+            theta_tmp = self.weights[ix_layer]
             if self.bias_flag:
                 # Removing weights for bias
                 theta_tmp = np.delete(theta_tmp, np.s_[0], 1)
@@ -155,11 +111,11 @@ class Mlp():
                 # Regularize weights, except for bias weigths
                 grads_tmp[:, 1:] = grads_tmp[:, 1:] + \
                     (self.lambda_r / n_examples) * \
-                    self.theta_weights[ix_layer][:, 1:]
+                    self.weights[ix_layer][:, 1:]
             else:
                 # Regularize ALL weights
                 grads_tmp = grads_tmp + \
-                    (self.lambda_r / n_examples) * self.theta_weights[ix_layer]
+                    (self.lambda_r / n_examples) * self.weights[ix_layer]
             gradients[ix_layer] = grads_tmp
         return gradients
 
@@ -167,10 +123,7 @@ class Mlp():
         '''
         Implementation of the Feedforward
         '''
-        if self.act_f == 'sigmoid':
-            def g(x): return self.sigmoid(x)
-        elif self.act_f == 'relu':
-            def g(x): return self.relu(x)
+        def g(x): return self.relu(x)
 
         A = [None] * self.n_layers
         Z = [None] * self.n_layers
@@ -183,11 +136,11 @@ class Mlp():
                 input_layer = np.concatenate(
                     (np.ones([n_examples, 1]), input_layer), axis=1)
             A[ix_layer] = input_layer
-            # Multiplying input_layer by theta_weights for this layer
+            # Multiplying input_layer by weights for this layer
             # print('np.shape(input_layer)', np.shape(input_layer))
-            # print('np.shape(self.theta_weights[ix_layer])', np.shape(self.theta_weights[ix_layer]))
+            # print('np.shape(self.weights[ix_layer])', np.shape(self.weights[ix_layer]))
             Z[ix_layer + 1] = np.matmul(input_layer,
-                                        self.theta_weights[ix_layer].transpose())
+                                        self.weights[ix_layer].transpose())
             # Activation Function
             output_layer = g(Z[ix_layer + 1])
             # Current output_layer will be next input_layer
@@ -228,14 +181,6 @@ class Mlp():
             unrolled_data = np.delete(unrolled_data, np.s_[0:n_weights])
         return rolled_list
 
-    def sigmoid(self, z):
-        '''
-        Sigmoid function
-        z can be an numpy array or scalar
-        '''
-        result = 1.0 / (1.0 + np.exp(-z))
-        return result
-
     def relu(self, z):
         '''
         Rectified Linear function
@@ -247,14 +192,6 @@ class Mlp():
             zero_aux = np.zeros(z.shape)
             meta_z = np.stack((z, zero_aux), axis=-1)
             result = np.max(meta_z, axis=-1)
-        return result
-
-    def sigmoid_derivative(self, z):
-        '''
-        Derivative for Sigmoid function
-        z can be an numpy array or scalar
-        '''
-        result = self.sigmoid(z) * (1 - self.sigmoid(z))
         return result
 
     def relu_derivative(self, z):
