@@ -1,7 +1,7 @@
 import numpy as np
 
 class Mlp():
-    def __init__(self, size_layers, act_funct='relu', reg_lambda=0.1, bias_flag=True):
+    def __init__(self, size_layers, act_funct='relu', reg_lambda=0.1, with_bias=False):
         '''
         Constructor method. Defines the characteristics of the MLP
         Arguments:
@@ -17,7 +17,7 @@ class Mlp():
         self.n_layers = len(size_layers)
         self.act_f = act_funct
         self.lambda_r = reg_lambda
-        self.bias_flag = bias_flag
+        self.with_bias = with_bias
 
         # Ramdomly initialize theta (MLP weights)
         self.initialize_theta_weights()
@@ -70,7 +70,7 @@ class Mlp():
         for size_layer, size_next_layer in zip(self.size_layers, size_next_layers):
             epsilon = np.sqrt(2.0 / (size_layer * size_next_layer))
             # Weigts from Normal distribution mean = 0, std = epsion
-            if self.bias_flag:
+            if self.with_bias:
                 theta_tmp = epsilon * \
                     (np.random.randn(size_next_layer, size_layer + 1))
             else:
@@ -95,7 +95,7 @@ class Mlp():
         # For the second last layer to the second one
         for ix_layer in np.arange(self.n_layers - 1 - 1, 0, -1):
             theta_tmp = self.weights[ix_layer]
-            if self.bias_flag:
+            if self.with_bias:
                 # Removing weights for bias
                 theta_tmp = np.delete(theta_tmp, np.s_[0], 1)
             deltas[ix_layer] = (np.matmul(theta_tmp.transpose(
@@ -107,7 +107,7 @@ class Mlp():
             grads_tmp = np.matmul(
                 deltas[ix_layer + 1].transpose(), A[ix_layer])
             grads_tmp = grads_tmp / n_examples
-            if self.bias_flag:
+            if self.with_bias:
                 # Regularize weights, except for bias weigths
                 grads_tmp[:, 1:] = grads_tmp[:, 1:] + \
                     (self.lambda_r / n_examples) * \
@@ -131,7 +131,7 @@ class Mlp():
 
         for ix_layer in range(self.n_layers - 1):
             n_examples = input_layer.shape[0]
-            if self.bias_flag:
+            if self.with_bias:
                 # Add bias element to every example in input_layer
                 input_layer = np.concatenate(
                     (np.ones([n_examples, 1]), input_layer), axis=1)
@@ -168,7 +168,7 @@ class Mlp():
         size_next_layers = self.size_layers.copy()
         size_next_layers.pop(0)
         rolled_list = []
-        if self.bias_flag:
+        if self.with_bias:
             extra_item = 1
         else:
             extra_item = 0
