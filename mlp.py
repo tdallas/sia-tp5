@@ -1,7 +1,7 @@
 import numpy as np
 
 class Mlp():
-    def __init__(self, size_layers, act_funct='relu', reg_lambda=0.1, with_bias=False):
+    def __init__(self, size_layers, act_funct='relu', reg_lambda=0.01, with_bias=True):
         '''
         Constructor method. Defines the characteristics of the MLP
         Arguments:
@@ -22,7 +22,7 @@ class Mlp():
         # Ramdomly initialize theta (MLP weights)
         self.initialize_theta_weights()
 
-    def train(self, X, Y, iterations=400, reset=False):
+    def train(self, X, Y, iterations=40000, reset=False):
         '''
         Given X (feature matrix) and y (class vector)
         Updates the Theta Weights by running Backpropagation N tines
@@ -34,11 +34,9 @@ class Mlp():
             reset      : If set, initialize Weights before training
                 default = False
         '''
-        n_examples = Y.shape[0]
-
         if reset:
             self.initialize_theta_weights()
-        for iteration in range(iterations):
+        for _ in range(iterations):
             self.gradients = self.backpropagation(X, Y)
             self.gradients_vector = self.unroll_weights(self.gradients)
             self.theta_vector = self.unroll_weights(self.weights)
