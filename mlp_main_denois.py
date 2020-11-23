@@ -7,11 +7,11 @@ etas_iterations = []
 
 for eta in etas:
     accuracy_predictions = [0] * len(get_inputs())
-    for i in range(50):
+    for i in range(15):
         network = Mlp(size_layers=[35, 30, 20, 18, 10, 6, 2, 6, 10, 18, 20, 30, 35], reg_lambda=eta)
         network.train(get_inputs(), get_outputs())
         print('llamando al minimize')
-        network.train_minimize()
+        network.mimize_weights_error()
         print('despues del train minimize')
         for index_inputs, inputs in enumerate(get_inputs()):
             prediction = network.predict(np.array([inputs]))[0]

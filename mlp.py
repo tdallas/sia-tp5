@@ -27,7 +27,7 @@ class Mlp():
         # Ramdomly initialize theta (MLP weights)
         self.initialize_theta_weights()
 
-    def train(self, X, Y, iterations=1000, reset=True):
+    def train(self, X, Y, iterations=50, reset=True):
         '''
         Given X (feature matrix) and y (class vector)
         Updates the Theta Weights by running Backpropagation N tines
@@ -42,11 +42,12 @@ class Mlp():
         if reset:
             self.initialize_theta_weights()
         for i in range(iterations):
-            self.gradients = self.backpropagation(X, Y)
-            self.gradients_vector = self.unroll_weights(self.gradients)
-            self.theta_vector = self.unroll_weights(self.weights)
-            self.theta_vector = self.theta_vector - self.gradients_vector
-            self.weights = self.roll_weights(self.theta_vector)
+            # self.gradients = self.backpropagation(X, Y)
+            # self.gradients_vector = self.unroll_weights(self.gradients)
+            # self.theta_vector = self.unroll_weights(self.weights)
+            # self.theta_vector = self.theta_vector - self.gradients_vector
+            # self.weights = self.roll_weights(self.theta_vector)
+            self.backpropagation(X, Y)
             self.eta = self.adapt_eta()
 
     def adapt_eta(self):
@@ -127,7 +128,7 @@ class Mlp():
                 # Removing weights for bias
                 theta_tmp = np.delete(theta_tmp, np.s_[0], 1)
             deltas[ix_layer] = (np.matmul(theta_tmp.transpose(
-            ), deltas[ix_layer + 1].transpose())).transpose() * g_dz(Z[ix_layer])
+            ), deltas[ix_layer + 1].transpose())).transpose() * g_dz(Z[ix_layer]) * self.eta
 
         # Compute gradients
         gradients = [None] * (self.n_layers - 1)
@@ -179,28 +180,27 @@ class Mlp():
 
     def calculate_error(self, test_data, test_exp):
         guesses = [self.predict(np.array([i])) for i in test_data]
-        # print('guesses', guesses)
         return np.sum(
             [(np.subtract(test_exp[i], guesses[i]) ** 2).sum()
              for i in range(len(test_exp))]
         ) / len(test_data)
 
     def cost(self, flat_weights, test_data, test_exp):
-        # print('flat_weights', flat_weights)
-        # print('test_data', test_data)
-        # print('test_exp', test_exp)
         return self.calculate_error(test_data, test_exp)
 
     def cost_denoise(self):
         return ''
 
-    def train_minimize(self):
+    def mimize_weights_error(self):
         prev_w = self.unroll_weights(self.weights)
         minimized_weights = minimize(fun=self.cost, x0=prev_w, args=(
             get_inputs(), get_inputs()), method='SLSQP')
         after_w = self.roll_weights(minimized_weights.x)
-        # print('prev_w', self.weights, 'after_w', after_w)
         self.weights = after_w
+
+    def print_weights(self, weights):
+        for weight in weights:
+            print(weight)
 
     def unroll_weights(self, rolled_data):
         '''
