@@ -18,9 +18,16 @@ for i in range(len(new_data)):
     new_data[i] = [0 if j == '0' else int(j) for j in new_data[i]]
 
 def get_inputs():
-    return np.asarray(new_data)
-
-# print(new_data)
+    return np.array(new_data)
 
 def get_outputs():
     return np.asarray(new_data)
+
+def concat_and_return(array):
+    array.append(1)
+    return array
+
+def get_inputs_with_bias():
+    return np.array(list(map(lambda x: concat_and_return(x), new_data)))
+
+# print(get_inputs_with_bias())

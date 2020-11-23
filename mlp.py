@@ -1,7 +1,11 @@
 import numpy as np
+import math
+from scipy.optimize import minimize
+from fonts import get_inputs, get_inputs_with_bias
+
 
 class Mlp():
-    def __init__(self, size_layers, act_funct='relu', reg_lambda=0.01, with_bias=True):
+    def __init__(self, size_layers, act_funct='relu', reg_lambda=0.9, with_bias=True):
         '''
         Constructor method. Defines the characteristics of the MLP
         Arguments:
@@ -16,13 +20,14 @@ class Mlp():
         self.size_layers = size_layers
         self.n_layers = len(size_layers)
         self.act_f = act_funct
-        self.lambda_r = reg_lambda
+        self.eta = reg_lambda
         self.with_bias = with_bias
+        self.prev_error = None
 
         # Ramdomly initialize theta (MLP weights)
         self.initialize_theta_weights()
 
-    def train(self, X, Y, iterations=40000, reset=False):
+    def train(self, X, Y, iterations=1000, reset=True):
         '''
         Given X (feature matrix) and y (class vector)
         Updates the Theta Weights by running Backpropagation N tines
@@ -36,12 +41,35 @@ class Mlp():
         '''
         if reset:
             self.initialize_theta_weights()
-        for _ in range(iterations):
+        for i in range(iterations):
             self.gradients = self.backpropagation(X, Y)
             self.gradients_vector = self.unroll_weights(self.gradients)
             self.theta_vector = self.unroll_weights(self.weights)
             self.theta_vector = self.theta_vector - self.gradients_vector
             self.weights = self.roll_weights(self.theta_vector)
+            self.eta = self.adapt_eta()
+
+    def adapt_eta(self):
+        inputs_to_calculate_error = get_inputs()[:8]
+        error = 0
+        for inputs in inputs_to_calculate_error:
+            error_calculated = self.calculate_error([inputs], [inputs])
+            error += error_calculated
+        error = error / len(inputs_to_calculate_error)
+        # print('error', error)
+        if self.prev_error is None:
+            self.prev_error = error
+            return self.eta + (error * 0.000001)
+        else:
+            if self.prev_error < error:
+                self.prev_error = error
+                return self.eta - (error * 0.000001)
+            elif self.prev_error == error:
+                self.prev_error = error
+                return 0.9
+            else:
+                self.prev_error = error
+                return self.eta + (error * 0.000001)
 
     def predict(self, X):
         '''
@@ -51,7 +79,9 @@ class Mlp():
         Output:
             y_hat  : Computed Vector Class for X
         '''
+        # print('llamando a predict con', X)
         A, Z = self.feedforward(X)
+        # print('A', A[-1])
         Y_hat = A[-1]
         return Y_hat
 
@@ -108,12 +138,12 @@ class Mlp():
             if self.with_bias:
                 # Regularize weights, except for bias weigths
                 grads_tmp[:, 1:] = grads_tmp[:, 1:] + \
-                    (self.lambda_r / n_examples) * \
+                    (self.eta / n_examples) * \
                     self.weights[ix_layer][:, 1:]
             else:
                 # Regularize ALL weights
                 grads_tmp = grads_tmp + \
-                    (self.lambda_r / n_examples) * self.weights[ix_layer]
+                    (self.eta / n_examples) * self.weights[ix_layer]
             gradients[ix_layer] = grads_tmp
         return gradients
 
@@ -146,6 +176,31 @@ class Mlp():
 
         A[self.n_layers - 1] = output_layer
         return A, Z
+
+    def calculate_error(self, test_data, test_exp):
+        guesses = [self.predict(np.array([i])) for i in test_data]
+        # print('guesses', guesses)
+        return np.sum(
+            [(np.subtract(test_exp[i], guesses[i]) ** 2).sum()
+             for i in range(len(test_exp))]
+        ) / len(test_data)
+
+    def cost(self, flat_weights, test_data, test_exp):
+        # print('flat_weights', flat_weights)
+        # print('test_data', test_data)
+        # print('test_exp', test_exp)
+        return self.calculate_error(test_data, test_exp)
+
+    def cost_denoise(self):
+        return ''
+
+    def train_minimize(self):
+        prev_w = self.unroll_weights(self.weights)
+        minimized_weights = minimize(fun=self.cost, x0=prev_w, args=(
+            get_inputs(), get_inputs()), method='SLSQP')
+        after_w = self.roll_weights(minimized_weights.x)
+        # print('prev_w', self.weights, 'after_w', after_w)
+        self.weights = after_w
 
     def unroll_weights(self, rolled_data):
         '''
@@ -180,6 +235,7 @@ class Mlp():
         return rolled_list
 
     def relu(self, z):
+        return self.tanh(z)
         '''
         Rectified Linear function
         z can be an numpy array or scalar
@@ -193,9 +249,23 @@ class Mlp():
         return result
 
     def relu_derivative(self, z):
+        return self.tanh_deriv(z)
         '''
         Derivative for Rectified Linear function
         z can be an numpy array or scalar
         '''
         result = 1 * (z > 0)
         return result
+
+    def tanh(self, x):
+        return np.tanh(0.3 * x)
+
+    def tanh_deriv(self, x):
+        return 0.3 * (1 - np.tanh(x) ** 2)
+
+    def logistic(self, x):
+        return 1 / (1 + np.exp(-2 * 0.3 * x))
+
+    def logistic_deriv(self, x):
+        act = self.logistic(x)
+        return 2 * 0.3 * act * (1 - act)
