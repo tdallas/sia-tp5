@@ -72,10 +72,10 @@ class MLP():
             self.theta_vector = self.theta_vector - self.gradients_vector
             self.weights = self.roll_weights(self.theta_vector)
             if self.adapt_eta:
-                self.eta = self.adapt_eta(training_input, training_output)
+                self.eta = self.adapt_eta_f(training_input, training_output)
         self.mimize_weights_error(training_input, training_output)
 
-    def adapt_eta(self, input_t, output_t):
+    def adapt_eta_f(self, input_t, output_t):
         error = 0
         for inputs in input_t:
             error_calculated = self.calculate_error(input_t, output_t)
@@ -111,11 +111,10 @@ class MLP():
         size_next_layers = self.layer_sizes.copy()
         size_next_layers.pop(0)
         for size_layer, size_next_layer in zip(self.layer_sizes, size_next_layers):
-            epsilon = np.sqrt(2.0 / (size_layer * size_next_layer))
+            epsilon = 0.6
             # Weigts from Normal distribution mean = 0, std = epsion
             if self.with_bias:
-                theta_tmp = epsilon * \
-                    (np.random.randn(size_next_layer, size_layer + 1))
+                theta_tmp = epsilon * (np.random.randn(size_next_layer, size_layer + 1))
             else:
                 theta_tmp = epsilon * \
                     (np.random.randn(size_next_layer, size_layer))
@@ -132,17 +131,24 @@ class MLP():
         deltas = [None] * self.n_layers
         deltas[-1] = A[-1] - output_t
         # For the second last layer to the second one
-        for ix_layer in np.arange(self.n_layers - 1 - 1, 0, -1):
+        for ix_layer in np.arange(self.n_layers - 1 - 1, -1, -1):
             theta_tmp = self.weights[ix_layer]
             if self.with_bias:
                 # Removing weights for bias
                 theta_tmp = np.delete(theta_tmp, np.s_[0], 1)
-            deltas[ix_layer] = (np.matmul(theta_tmp.transpose(
-            ), deltas[ix_layer + 1].transpose())).transpose() * self.derivate_activation(Z[ix_layer]) * self.eta
+            if ix_layer == 0:
+                # print('theta_tmp shape', np.shape(theta_tmp.transpose()))
+                # print('delta s shape', np.shape(deltas[ix_layer+1].transpose()))
+                # print('multuplicacion transpuesta ', np.shape(np.matmul(theta_tmp.transpose(), deltas[ix_layer+1].transpose())))
+                # print('Z shape', np.shape(self.derivate_activation(Z[ix_layer])))
+                deltas[ix_layer] = np.matmul(np.matmul(theta_tmp.transpose(), deltas[ix_layer+1].transpose()), self.derivate_activation(Z[ix_layer])) * self.eta
+            else :
+                deltas[ix_layer] = (np.matmul(theta_tmp.transpose(), deltas[ix_layer + 1].transpose())).transpose() * self.derivate_activation(Z[ix_layer]) * self.eta
 
         # Compute gradients
         gradients = [None] * (self.n_layers - 1)
         for ix_layer in range(self.n_layers - 1):
+            # print('ix layer segunda iteracion', ix_layer)
             grads_tmp = np.matmul(
                 deltas[ix_layer + 1].transpose(), A[ix_layer])
             grads_tmp = grads_tmp / n_examples
@@ -156,30 +162,34 @@ class MLP():
                 grads_tmp = grads_tmp + \
                     (self.eta / n_examples) * self.weights[ix_layer]
             gradients[ix_layer] = grads_tmp
+        # print('gradients', gradients)
         return gradients
 
     def feedforward(self, input_t):
         A = [None] * self.n_layers
         Z = [None] * self.n_layers
         input_layer = input_t
-
         for ix_layer in range(self.n_layers - 1):
+            # print('ix layer en feed forward', ix_layer)
             n_examples = input_layer.shape[0]
             if self.with_bias:
                 # Add bias element to every example in input_layer
                 input_layer = np.concatenate(
                     (np.ones([n_examples, 1]), input_layer), axis=1)
+                if ix_layer == 0:
+                    # print('input layer shape' ,np.shape(input_layer))
+                    # print('weights shape' ,np.shape(self.weights[0]))
+                    Z[0] = np.matmul(input_layer, self.weights[0].T)
+
             A[ix_layer] = input_layer
             # Multiplying input_layer by weights for this layer
-            # print('np.shape(input_layer)', np.shape(input_layer))
-            # print('np.shape(self.weights[ix_layer])', np.shape(self.weights[ix_layer]))
             Z[ix_layer + 1] = np.matmul(input_layer,
                                         self.weights[ix_layer].transpose())
             # Activation Function
             output_layer = self.activation(Z[ix_layer + 1])
             # Current output_layer will be next input_layer
             input_layer = output_layer
-
+        # print('Z', Z)
         A[self.n_layers - 1] = output_layer
         return A, Z
 

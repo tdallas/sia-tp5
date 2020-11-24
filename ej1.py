@@ -7,22 +7,23 @@ from fonts import get_input, get_output
 train_x = get_input(2)
 train_y = get_output(2)
 
-ae = MLP([35, 17, 15, 3], 2, [3, 15, 17, 35], activation='tanh', solver='bfgs', eta=0.0001, max_iterations=1500, adapt_eta=False, verbose=True)
+ae = MLP([35, 29, 25], 5, [25, 29, 35], activation='tanh',
+         solver='bfgs', eta=0.001, max_iterations=10000, adapt_eta=False, verbose=True)
 ae.train(train_x, train_x)
 
 for i in range(10):
     i = np.random.randint(train_x.shape[0])
-    prediction = ae.predict(train_x[i].reshape(-1,35))
+    prediction = ae.predict(train_x[i].reshape(-1, 35))
 
     plt.figure()
-    plt.subplot(1,2,1)
-    plt.imshow(train_x[i].reshape(7,5), 'gray_r')
-    plt.title("Input Letter: " + train_y[i], fontsize = 15)
+    plt.subplot(1, 2, 1)
+    plt.imshow(train_x[i].reshape(7, 5), 'gray_r')
+    plt.title("Input Letter: " + train_y[i], fontsize=15)
     plt.xticks([])
     plt.yticks([])
-    plt.subplot(1,2,2)
-    plt.imshow(prediction.reshape(7,5), 'gray_r')
-    plt.title('Predicted', fontsize = 15)
+    plt.subplot(1, 2, 2)
+    plt.imshow(prediction.reshape(7, 5), 'gray_r')
+    plt.title('Predicted', fontsize=15)
     plt.xticks([])
     plt.yticks([])
     plt.show()
