@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 from sklearn.neural_network import MLPRegressor
 from sklearn.neural_network._base import ACTIVATIONS
 
@@ -27,6 +28,34 @@ class AutoEncoder():
 
     def fit(self, training_input, training_output):
         return self.mlp.fit(training_input, training_output)
+
+    def fit_and_plot(self, training_input, training_output):
+        scores_train = []
+        # scores_test = []
+        
+        epoch = 0
+        while epoch < self.max_iterations:
+            self.mlp.partial_fit(training_input, training_output)
+
+            # SCORE TRAIN
+            scores_train.append(self.mlp.score(training_input, training_output))
+        
+            # SCORE TEST
+            # scores_test.append(self.mlp.score(X_test, y_test))
+        
+            epoch += 1
+        
+        plt.plot(scores_train)
+        plt.ylabel('Accuracy', fontsize=16)
+        plt.xlabel('Iteration', fontsize=16)
+        plt.tight_layout()
+        plt.show()
+
+        plt.plot(self.mlp.loss_curve_)
+        plt.ylabel('Loss', fontsize=16)
+        plt.xlabel('Iteration', fontsize=16)
+        plt.tight_layout()
+        plt.show()
 
     def predict(self, data):
         return self.mlp.predict(data.reshape(-1,len(self.mlp.coefs_[0])))
