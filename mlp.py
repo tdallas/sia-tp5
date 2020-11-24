@@ -186,6 +186,23 @@ class MLP():
         A[self.n_layers - 1] = output_layer
         return A, Z
 
+    def encode(self, data):
+        return self.get_data_from_layer(data, self.latent_layer - 1, 0)
+
+    def decode(self, data):
+        return self.get_data_from_layer(data, self.decoder_layer, self.latent_layer - 1)
+
+    def get_data_from_layer(self, data, to_layer, from_layer=0):
+        input_layer = data
+        if self.with_bias:
+            input_layer = np.insert(input_layer, 0, 1)
+        L = self.activation(np.matmul(input_layer, self.weights[from_layer].T))
+        from_layer += 1
+        if from_layer >= to_layer or from_layer >= len(self.weights):
+            return L
+        else:
+            return self.get_data_from_layer(L, to_layer, from_layer=from_layer)
+
     def calculate_error(self, input_t, output_t):
         guesses = [self.predict(np.array([i])) for i in input_t]
         return np.sum(
