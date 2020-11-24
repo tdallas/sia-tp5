@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 font_1_input = [[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
@@ -142,3 +143,37 @@ def get_output(font_number):
         return parse_output(font_2_output)
     else:
         return parse_output(font_3_output)
+
+def add_noise(input, noise_quantity_per_letter):
+    input_noise = np.copy(input)
+    for letter in input_noise:
+        random_indexes = np.random.randint(35, size=noise_quantity_per_letter)
+        print(random_indexes)
+        for i in random_indexes:
+            if letter[i] == 1:
+                letter[i] = 0
+            else:
+                letter[i] = 1
+    return input_noise
+
+def plot_letter_comparison(letter, letter_input, letter_predicted):
+    plt.figure()
+    plt.subplot(1,2,1)
+    plt.imshow(letter_input.reshape(7,5), 'gray_r')
+    plt.title("Input Letter: " + letter, fontsize = 15)
+    plt.xticks([])
+    plt.yticks([])
+    plt.subplot(1,2,2)
+    plt.imshow(letter_predicted.reshape(7,5), 'gray_r')
+    plt.title('Predicted', fontsize = 15)
+    plt.xticks([])
+    plt.yticks([])
+    plt.show()
+
+def plot_letter(letter, letter_input):
+    plt.figure()
+    plt.imshow(letter_input.reshape(7,5), 'gray_r')
+    plt.title("Letter: " + letter, fontsize = 15)
+    plt.xticks([])
+    plt.yticks([])
+    plt.show()
