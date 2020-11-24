@@ -245,3 +245,6 @@ class MLP():
             rolled_list.append(data_tmp)
             unrolled_data = np.delete(unrolled_data, np.s_[0:n_weights])
         return rolled_list
+
+    def get_latent_layer_position(self):
+        return self.latent_layer
