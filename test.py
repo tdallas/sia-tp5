@@ -4,10 +4,10 @@ import matplotlib.pyplot as plt
 from sklearn.neural_network import MLPRegressor
 from sklearn.metrics import accuracy_score
 from sklearn.neural_network._base import ACTIVATIONS
-from fonts import get_inputs, get_outputs, get_output_letters
+from fonts import get_input, get_output
 
-train_x = get_inputs()
-train_y = get_output_letters()
+train_x = get_input(2)
+train_y = get_output(2)
 
 # idx = np.random.randint(train_x.shape[0])
 # img = train_x[idx].reshape(7,5)
