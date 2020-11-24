@@ -58,3 +58,32 @@ plt.imshow(prediction_2.reshape(7,5), 'gray_r')
 plt.xticks([])
 plt.yticks([])
 plt.show()
+
+for i in range(len(train_y)):
+    latent_space = ae.encode(train_x[i])
+    plt.scatter(latent_space[0], latent_space[1], label=train_y[i])
+plt.xlabel('Z1', fontsize=16)
+plt.ylabel('Z2', fontsize=16)
+plt.xlim(-1.1, 1.1)
+plt.ylim(-1.1, 1.1)
+plt.tight_layout()
+plt.show()
+
+nx = 10
+ny = 10
+x_values = np.linspace(-1, 1, nx)
+y_values = np.linspace(-1, 1, ny)
+canvas = np.empty((7*ny, 5*nx))
+
+for i, yi in enumerate(y_values):
+    for j, xi in enumerate(x_values):
+        latent = np.array([xi, yi])
+        reconst = ae.decode(latent)
+        canvas[(nx-i-1)*7:(nx-i)*7,j*5:(j+1)*5] = reconst.reshape(7, 5)
+
+plt.imshow(canvas, 'gray_r')
+plt.xlabel('Z1', fontsize = 16)
+plt.ylabel('Z2', fontsize = 16)
+plt.xticks([])
+plt.yticks([])
+plt.show()
