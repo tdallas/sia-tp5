@@ -7,12 +7,15 @@ from fonts import get_input, get_output
 train_x = get_input(2)
 train_y = get_output(2)
 
-ae = MLP([35, 29, 17], 2, [17, 29, 35], activation='tanh',
+# ae = MLP([35, 29, 19], 2, [19, 29, 35], activation='tanh',
+#          solver='bfgs', eta=0.01, max_iterations=200, adapt_eta=False, verbose=True)
+# ae.train(train_x[:10], train_x[:10])
+ae = MLP([35, 29, 19], 2, [19, 29, 35], activation='tanh',
          solver='bfgs', eta=0.01, max_iterations=200, adapt_eta=False, verbose=True)
-ae.train(train_x, train_x)
+ae.train(train_x[:10], train_x[:10])
 
+# for i in range(10):
 for i in range(10):
-    i = np.random.randint(train_x.shape[0])
     prediction = ae.predict(train_x[i].reshape(-1, 35))
 
     plt.figure()

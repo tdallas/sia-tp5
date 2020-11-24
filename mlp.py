@@ -41,7 +41,7 @@ derivative_activation_functions = {
 }
 
 class MLP():
-    def __init__(self, encoder_layer_sizes, latent_layer_size, decoder_layer_sizes, activation, solver, eta=0.0001, max_iterations=30000, adapt_eta=False, with_bias=True, verbose=False):
+    def __init__(self, encoder_layer_sizes, latent_layer_size, decoder_layer_sizes, activation, solver, eta=0.0001, max_iterations=30000, iteration_minimize=20, adapt_eta=False, with_bias=True, verbose=False):
         self.encoder_layer = len(encoder_layer_sizes)
         self.latent_layer = self.encoder_layer + 1
         self.decoder_layer = self.latent_layer + len(decoder_layer_sizes) + 1
@@ -58,6 +58,7 @@ class MLP():
         self.adapt_eta = adapt_eta
         self.verbose = verbose
         self.prev_error = None
+        self.iteration_minimize = iteration_minimize
         self.weights = self.initialize_weights()
 
     def train(self, training_input, training_output, reset=True):
@@ -73,7 +74,7 @@ class MLP():
             self.weights = self.roll_weights(self.theta_vector)
             if self.adapt_eta:
                 self.eta = self.adapt_eta_f(training_input, training_output)
-            if i % 5 == 0:
+            if i % self.iteration_minimize == 0:
                 self.mimize_weights_error(training_input, training_output)
 
     def adapt_eta_f(self, input_t, output_t):
