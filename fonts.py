@@ -148,7 +148,6 @@ def add_noise(input, noise_quantity_per_letter):
     input_noise = np.copy(input)
     for letter in input_noise:
         random_indexes = np.random.randint(35, size=noise_quantity_per_letter)
-        print(random_indexes)
         for i in random_indexes:
             if letter[i] == 1:
                 letter[i] = 0
