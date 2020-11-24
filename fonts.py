@@ -23,6 +23,9 @@ def get_inputs():
 def get_outputs():
     return np.asarray(new_data)
 
+def get_output_letters():
+    return ["@", "A", "B", "C", "D" , "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "[", "\\", "]", "^", "_"]
+
 def concat_and_return(array):
     array.append(1)
     return array
