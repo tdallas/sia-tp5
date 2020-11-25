@@ -32,7 +32,7 @@ for i in range(0, 50, 10):
     plt.ylim(-1.1, 1.1)
     plt.show()
 
-for i in range(50):
+for i in range(100):
     prediction = ae.predict(np.array([inputs[i]]))
     matrix_of_points = np.array(prediction[0]).reshape(21, 2)
     plt.scatter(matrix_of_points[:, 0], matrix_of_points[:, 1])
