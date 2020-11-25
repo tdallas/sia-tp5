@@ -13,11 +13,11 @@ train_y = get_output(2)
 #          solver='bfgs', eta=0.01, max_iterations=200, adapt_eta=False, verbose=True)
 # ae.train(train_x[:10], train_x[:10])
 ae = MLP([35, 29, 19], 2, [19, 29, 35], activation='tanh',
-         solver='bfgs', eta=0.01, max_iterations=200, adapt_eta=False, verbose=True)
-ae.train(train_x[:10], train_x[:10])
+         solver='bfgs', eta=0.007, max_iterations=350, adapt_eta=False, verbose=True, iteration_minimize=2)
+ae.train(train_x[:25], train_x[:25])
 
 # for i in range(10):
-for i in range(10):
+for i in range(len(train_x)):
     A, Z = ae.feedforward(train_x[i].reshape(-1,35))
     plt.scatter(A[ae.get_latent_layer_position()-1][0][1], A[ae.get_latent_layer_position()-1][0][2], label=train_y[i])
 plt.ylabel('Z1', fontsize=16)
@@ -28,8 +28,7 @@ plt.tight_layout()
 plt.show()
 
 # for i in range(10):
-for i in range(10):
-    i = np.random.randint(train_x.shape[0])
+for i in range(len(train_x)):
     to_predict = train_x[i].reshape(-1, 35)
     prediction = ae.predict(to_predict)
 
