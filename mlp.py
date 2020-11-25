@@ -113,7 +113,7 @@ class MLP():
         size_next_layers = self.layer_sizes.copy()
         size_next_layers.pop(0)
         for size_layer, size_next_layer in zip(self.layer_sizes, size_next_layers):
-            epsilon = 0.69
+            epsilon = 0.65
             # Weigts from Normal distribution mean = 0, std = epsion
             if self.with_bias:
                 theta_tmp = epsilon * (np.random.normal(size= (size_next_layer, size_layer + 1), scale=epsilon))
