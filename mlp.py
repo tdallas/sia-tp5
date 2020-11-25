@@ -64,7 +64,7 @@ class MLP():
     def train(self, training_input, training_output, reset=True):
         if reset:
             self.initialize_weights()
-        for i in range(self.max_iterations):
+        for i in range(1, self.max_iterations + 1):
             if self.verbose:
                 print("Iteration: " + str(i))
             self.gradients = self.backpropagation(training_input, training_output)
@@ -74,7 +74,7 @@ class MLP():
             self.weights = self.roll_weights(self.theta_vector)
             if self.adapt_eta:
                 self.eta = self.adapt_eta_f(training_input, training_output)
-            if i % self.iteration_minimize == 0:
+            if self.iteration_minimize > 0 and i % self.iteration_minimize == 0:
                 self.mimize_weights_error(training_input, training_output)
 
     def adapt_eta_f(self, input_t, output_t):
